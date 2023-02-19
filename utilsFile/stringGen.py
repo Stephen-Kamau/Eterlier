@@ -13,3 +13,17 @@ def alpha(stringLength=8):
 def numeric(stringLength=8):
     Digits = string.digits
     return ''.join(random.sample(Digits, stringLength))
+
+
+
+# [Unit]
+# Description=Script RUNNER Daemon
+#
+# [Service]
+# Type=simple
+# User=root
+# ExecStart=/home/ubuntu/Eterlier/run.sh
+# Restart=on-failure
+#
+# [Install]
+# WantedBy=default.target
