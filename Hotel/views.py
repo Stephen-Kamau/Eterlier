@@ -4,11 +4,12 @@ from rest_framework.response import Response
 from utilsFile import (auth as authentication,  passwordHash as password_hasher, sms,
                         stringGen as string_generator, mainChecker as validator, sendMail)
 from eterlier import settings
-from .serielizers import BranchSerializer
+from .serielizers import BranchSerializer, FoodCategorySerializer, FoodSUBCategorySerializer, FoodProductSerializer
 
 import datetime
 import jwt
-from .models import Eatery, Branch
+from .models import Eatery, Branch, FoodCategory, FoodSubCategory, FoodProduct
+from accounts.models import User
 # Create your views here.
 
 @api_view(['GET'])
@@ -174,6 +175,201 @@ def get_all_my_branches(request, decrypedToken):
 
     except Exception as e:
         return Response({"error": "Erorr OCcurred", "message":f"An error occured    {e}"}, status=400)
+
+
+@api_view(['POST'])
+@authentication.token_required
+def add_food_category(request, decrypedToken):
+    try:
+        # Check if the the One adding is Manager and he exists for the branch
+        if not User.objects.filter(user_id=decrypedToken["user_id"]).exists():
+            return Response({
+                "error": "No such User present for Brachs",
+                "message": "Ensure you are a manager for the Branch"
+            }, status=400)
+
+        # Get the eatery reference
+        user_ref = User.objects.get(user_id=decrypedToken['user_id'])
+        if not user_ref.is_manager:
+            return Response({
+                "error": "No Enough Previledges",
+                "message": "Ensure you are a manager for the Branch"
+            }, status=400)
+
+        #get the manager
+        if not Manager.objects.get(user = user_ref).exists():
+            return Response({
+                "error": f"No such Manager",
+                "message": "Not allowed"
+            }, status=400)
+
+        manager_ref = Manager.objects.get(user = user_ref)
+
+
+        name = request.data.get('name',"uncategorised")
+        desc = request.data.get('description',None)
+        cat_id = string_generator.alphanumeric(20)
+
+        # Create the food category
+        category = FoodCategory(
+            name = name,
+            description = desc,
+            food_category_id= cat_id,
+            branchID = manager_ref.branch_ref
+        )
+        category.save()
+
+        return Response({
+            "success": f"Food category added to branch {manager_ref.branch_ref.name}",
+            "message": "Food category added successfully",
+            "details": FoodCategorySerializer(category).data
+        }, status=201)
+
+    except Exception as e:
+        return Response({
+            "error": "Error occurred",
+            "message": f"An error occurred: {e}"
+        }, status=400)
+
+
+
+@api_view(['POST'])
+@authentication.token_required
+def add_food_sub_category(request, decrypedToken):
+    try:
+        # Check if the the One adding is Manager and he exists for the branch
+        if not User.objects.filter(user_id=decrypedToken["user_id"]).exists():
+            return Response({
+                "error": "No such User present for Brachs",
+                "message": "Ensure you are a manager for the Branch"
+            }, status=400)
+
+        # Get the eatery reference
+        user_ref = User.objects.get(user_id=decrypedToken['user_id'])
+        if not user_ref.is_manager:
+            return Response({
+                "error": "No Enough Previledges",
+                "message": "Ensure you are a manager for the Branch"
+            }, status=400)
+
+        #get the manager
+        if not Manager.objects.get(user = user_ref).exists():
+            return Response({
+                "error": f"No such Manager",
+                "message": "Not allowed"
+            }, status=400)
+
+        manager_ref = Manager.objects.get(user = user_ref)
+        category_id = request.data.get("category", None)
+        name = request.data.get('name',"uncategorised")
+        desc = request.data.get('description',None)
+        foodcat_id = string_generator.alphanumeric(20)
+
+        if not FoodCategory.objects.filter(food_category_id = category_id).exists():
+            return Response({
+                "error": f"No such Category Found",
+                "message": "Not allowed Category"
+            }, status=400)
+
+        category = FoodCategory.objects.get(food_category_id = category_id)
+        # Create the food category
+        sub_category = FoodCategory(
+            name = name,
+            description = desc,
+            food_subcategory_id= foodcat_id,
+            category = category
+        )
+        sub_category.save()
+
+        return Response({
+            "success": f"Food SUBcategory added to branch {manager_ref.branch_ref.name} with Catgegory  {category.name}",
+            "message": "Food SUBcategory added successfully",
+            "details": FoodSUBCategorySerializer(category).data
+        }, status=201)
+
+    except Exception as e:
+        return Response({
+            "error": "Error occurred",
+            "message": f"An error occurred: {e}"
+        }, status=400)
+
+
+
+
+@api_view(['POST'])
+@authentication.token_required
+def add_food_product(request, decrypedToken):
+    try:
+        # Check if the the One adding is Manager and he exists for the branch
+        if not User.objects.filter(user_id=decrypedToken["user_id"]).exists():
+            return Response({
+                "error": "No such User present for Brachs",
+                "message": "Ensure you are a manager for the Branch"
+            }, status=400)
+
+        # Get the eatery reference
+        user_ref = User.objects.get(user_id=decrypedToken['user_id'])
+        if not user_ref.is_manager:
+            return Response({
+                "error": "No Enough Previledges",
+                "message": "Ensure you are a manager for the Branch"
+            }, status=400)
+
+        #get the manager
+        if not Manager.objects.get(user = user_ref).exists():
+            return Response({
+                "error": f"No such Manager",
+                "message": "Not allowed"
+            }, status=400)
+
+
+        # Get the FoodSubCategory reference
+        food_sub_id = request.data.get("subcategory_id", None)
+        name = request.data.get('name')
+        description = request.data.get('description', '')
+        price = request.data.get('price')
+        quantityAvailable = request.data.get('quantityAvailable', 1)
+        product_id =string_generator.alphanumeric(20)
+
+        #check ImageField
+
+        image = request.FILES.get('image', None)
+        if not image:
+            return Response({"error": "Please provide an image."}, status=400)
+
+
+        #get whehter the sub category is present
+        if not FoodSubCategory.objects.filter(food_subcategory_id = food_sub_id).exists():
+            return Response({
+                "error": f"No such Foof SUb Category Found",
+                "message": "Not allowed SubCategory"
+            }, status=400)
+
+        subcategory = FoodSubCategory.objects.get(food_subcategory_id = food_sub_id)
+
+        product = FoodProduct(
+        food_product_id = product_id,
+        quantityAvailable = quantityAvailable,
+        price = price,
+        name = name,
+        description = description,
+        subcategory_id = subcategory,
+        image = image
+        )
+        product.save()
+
+        return Response({
+            "success": f"Food product added to Sub Category {subcategory.name}",
+            "message": "Food product added successfully",
+            "details": FoodProductSerializer(product).data
+        }, status=201)
+
+    except Exception as e:
+        return Response({
+            "error": "Error occurred",
+            "message": f"An error occurred: {e}"
+        }, status=400)
+
 
 @api_view(['GET'])
 def signup(request):
