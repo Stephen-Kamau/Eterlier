@@ -25,12 +25,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "sbkjsdlsilknwsdkwl2849y32gflfmbvdghbjkslfgnhfdklsfdjhkfdls"
+SECRET_KEY = "c9qv1!@#3hmu2=%%wha^2z810k$@4*)m@r)r75=0r+gr!7m+w5"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS =  ["*"]#config("ALLOWED_HOSTS" , cast = Csv())
+ALLOWED_HOSTS =  ["*", '127.0.0.1', "eterlier.up.railway.app/"]#config("ALLOWED_HOSTS" , cast = Csv())
 
 # SMS TOKENS INFOR
 SMS_SID = "dhuisbk"#config('SMS_SID')
@@ -85,13 +85,13 @@ WSGI_APPLICATION = 'eterlier.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': str(BASE_DIR / 'db.sqlite3'),
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
