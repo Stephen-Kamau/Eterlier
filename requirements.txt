@@ -13,9 +13,6 @@ pickleshare==0.7.5
 Pillow
 prompt-toolkit==3.0.5
 psycopg2==2.8.5
-ptyprocess==0.6.0
-Pygments==2.6.1
-pylint==2.5.2
 pytz==2020.1
 bcrypt ==3.2.0
 pytest==5.4.2
