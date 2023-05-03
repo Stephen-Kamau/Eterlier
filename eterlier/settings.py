@@ -12,8 +12,8 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 
 from pathlib import Path
 
-import django_heroku
-from decouple import config, Csv
+# import django_heroku
+# from decouple import config, Csv
 import os
 
 
